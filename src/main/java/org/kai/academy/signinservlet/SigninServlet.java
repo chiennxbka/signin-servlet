@@ -7,17 +7,26 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.hibernate.Session;
 import org.kai.academy.signinservlet.model.Employee;
+import org.kai.academy.signinservlet.utils.AESUtil;
 import org.kai.academy.signinservlet.utils.HibernateUtil;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
 @WebServlet(name = "SigninServlet", value = "/signin")
 public class SigninServlet extends HttpServlet {
-    Session session = null;
+    Session session;
 
     @Override
     public void init() throws ServletException {
@@ -60,8 +69,8 @@ public class SigninServlet extends HttpServlet {
         out.println("                        <h5 class=\"card-title text-center mb-5 fw-light fs-5\">Sign In</h5>                                                     ");
         out.println("                        <form method=\"post\">                                                                                                   ");
         out.println("                            <div class=\"form-floating mb-3\">                                                                                   ");
-        out.println("                                <input type=\"text\" class=\"form-control\" id=\"floatingInput\" name=\"username\" placeholder=\"User name\"> ");
-        out.println("                                <label for=\"floatingInput\">Username</label>                                                                    ");
+        out.println("                                <input type=\"email\" class=\"form-control\" id=\"floatingInput\" name=\"email\" placeholder=\"Email\"> ");
+        out.println("                                <label for=\"floatingInput\">Email</label>                                                                    ");
         out.println("                            </div>                                                                                                             ");
         out.println("                            <div class=\"form-floating mb-3\">                                                                                   ");
         out.println("                                <input type=\"password\" class=\"form-control\" id=\"floatingPassword\" name=\"password\" placeholder=\"Password\">      ");
@@ -92,12 +101,27 @@ public class SigninServlet extends HttpServlet {
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<Employee> criteriaQuery = builder.createQuery(Employee.class);
         Root<Employee> root = criteriaQuery.from(Employee.class);
-        criteriaQuery.select(root).where(builder.and(builder.equal(root.get("email"), email), builder.equal(root.get("password"), password)));
-        Employee employee = session.createQuery(criteriaQuery).getSingleResult();
-        if (employee != null){
-            response.sendRedirect("/products");
-        } else {
-         response.sendError(404, "Unauthorized");
+        criteriaQuery.select(root).where(builder.and(builder.equal(root.get("email"), email)));
+        try {
+            Employee employee = session.createQuery(criteriaQuery).getSingleResult();
+            try {
+                String passEncrypt = employee.getPassword();
+                SecretKey key = AESUtil.generateKey(128);
+                IvParameterSpec ivParameterSpec = AESUtil.generateIv();
+                String algorithm = "AES/CBC/PKCS5Padding";
+                String passwordPlanText = AESUtil.decrypt(algorithm, passEncrypt, key, ivParameterSpec);
+                if (passwordPlanText.equals(password)) {
+                    response.sendRedirect("/products");
+                } else {
+                    response.sendError(404, "Email or Password invalid");
+                }
+            } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | NoSuchPaddingException |
+                     IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
+                throw new RuntimeException(e);
+            }
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            response.sendError(404, "Email or Password invalid");
         }
     }
 }
