@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.hibernate.Session;
-import org.kai.academy.signinservlet.model.Employee;
+import org.kai.academy.signinservlet.model.Users;
 import org.kai.academy.signinservlet.utils.HibernateUtil;
 import org.kai.academy.signinservlet.utils.MD5Util;
 import javax.persistence.NoResultException;
@@ -93,8 +93,8 @@ public class SigninServlet extends HttpServlet {
 
 //        dung session de query csdl
         CriteriaBuilder builder = session.getCriteriaBuilder();
-        CriteriaQuery<Employee> criteriaQuery = builder.createQuery(Employee.class);
-        Root<Employee> root = criteriaQuery.from(Employee.class);
+        CriteriaQuery<Users> criteriaQuery = builder.createQuery(Users.class);
+        Root<Users> root = criteriaQuery.from(Users.class);
         try {
             String passEncrypt = MD5Util.encrypt(password);
             criteriaQuery.select(root).where(builder.and(builder.equal(root.get("email"), email), builder.equal(root.get("password"), passEncrypt)));

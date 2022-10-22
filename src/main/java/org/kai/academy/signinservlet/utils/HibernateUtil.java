@@ -5,8 +5,8 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.service.ServiceRegistry;
-import org.kai.academy.signinservlet.model.Employee;
 import org.kai.academy.signinservlet.model.Product;
+import org.kai.academy.signinservlet.model.Users;
 
 import java.util.Properties;
 
@@ -35,7 +35,7 @@ public class HibernateUtil {
                 configuration.setProperties(settings);
 
                 configuration.addAnnotatedClass(Product.class);
-                configuration.addAnnotatedClass(Employee.class);
+                configuration.addAnnotatedClass(Users.class);
                 ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
                         .applySettings(configuration.getProperties()).build();
 

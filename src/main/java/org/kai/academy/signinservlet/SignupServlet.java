@@ -7,7 +7,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.hibernate.Session;
-import org.kai.academy.signinservlet.model.Employee;
+import org.hibernate.Transaction;
+import org.kai.academy.signinservlet.model.Users;
 import org.kai.academy.signinservlet.utils.HibernateUtil;
 import org.kai.academy.signinservlet.utils.MD5Util;
 
@@ -17,7 +18,9 @@ import java.security.NoSuchAlgorithmException;
 
 @WebServlet(name = "SignupServlet", value = "/signup")
 public class SignupServlet extends HttpServlet {
-    Session session = null;
+    Session session;
+
+    Transaction transaction;
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -139,10 +142,12 @@ public class SignupServlet extends HttpServlet {
         String firstName = request.getParameter("firstName");
         String lastName = request.getParameter("lastName");
         try {
-            Employee employee = new Employee(1703, lastName, firstName, email, MD5Util.encrypt(password));
-            session.save(employee);
+            Users user = new Users(firstName, lastName, email, MD5Util.encrypt(password));
+            session.save(user);
+            transaction.commit();
             if (session.isOpen()) session.close();
         } catch (NoSuchAlgorithmException e) {
+            transaction.rollback();
             throw new RuntimeException(e);
         }
 
@@ -153,6 +158,7 @@ public class SignupServlet extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
         try {
             session = HibernateUtil.getSessionFactory().openSession();
+            transaction = session.beginTransaction();
         } catch (Exception exception) {
             exception.printStackTrace();
         }
