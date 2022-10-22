@@ -70,6 +70,8 @@ public class SigninServlet extends HttpServlet {
         out.println("                                <input type=\"password\" class=\"form-control\" id=\"floatingPassword\" name=\"password\" placeholder=\"Password\">      ");
         out.println("                                <label for=\"floatingPassword\">Password</label>                                                                 ");
         out.println("                            </div>                                                                                                             ");
+        if(error != null && error.equals("true"))
+            out.println("                            <p style=\"color: red\">Username or password incorrect</p>                                                         ");
         out.println("                            <div class=\"d-grid\">                                                                                               ");
         out.println("                                <button class=\"btn btn-primary btn-login text-uppercase fw-bold\" type=\"submit\">Sign in</button>                ");
         out.println("                            </div>                                                                                                             ");
