@@ -11,7 +11,7 @@ public class Employee {
 
     @Id
     @Column(name="employeeNumber", nullable=false, unique=true)
-    private int employeeNumber;
+    private long employeeNumber;
 
     @Column(name="lastName")
     private String lastName;
@@ -40,7 +40,7 @@ public class Employee {
     public Employee() {
     }
 
-    public Employee(int employeeNumber, String lastName, String firstName, String email, String password) {
+    public Employee(long employeeNumber, String lastName, String firstName, String email, String password) {
         this.employeeNumber = employeeNumber;
         this.lastName = lastName;
         this.firstName = firstName;
@@ -48,11 +48,11 @@ public class Employee {
         this.password = password;
     }
 
-    public int getEmployeeNumber() {
+    public long getEmployeeNumber() {
         return employeeNumber;
     }
 
-    public void setEmployeeNumber(int employeeNumber) {
+    public void setEmployeeNumber(long employeeNumber) {
         this.employeeNumber = employeeNumber;
     }
 

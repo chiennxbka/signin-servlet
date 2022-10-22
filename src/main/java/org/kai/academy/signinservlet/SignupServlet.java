@@ -1,26 +1,19 @@
 package org.kai.academy.signinservlet;
 
-import java.io.*;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.*;
-import jakarta.servlet.annotation.*;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.hibernate.Session;
 import org.kai.academy.signinservlet.model.Employee;
-import org.kai.academy.signinservlet.utils.AESUtil;
 import org.kai.academy.signinservlet.utils.HibernateUtil;
+import org.kai.academy.signinservlet.utils.MD5Util;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-
-import static org.kai.academy.signinservlet.utils.AESUtil.encrypt;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.security.NoSuchAlgorithmException;
 
 @WebServlet(name = "SignupServlet", value = "/signup")
 public class SignupServlet extends HttpServlet {
@@ -145,19 +138,14 @@ public class SignupServlet extends HttpServlet {
         String password = request.getParameter("password");
         String firstName = request.getParameter("firstName");
         String lastName = request.getParameter("lastName");
-        IvParameterSpec ivParameterSpec = AESUtil.generateIv();
-        String algorithm = "AES/CBC/PKCS5Padding";
         try {
-            SecretKey key = AESUtil.generateKey(128);
-            password = encrypt(algorithm, password, key, ivParameterSpec);
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidAlgorithmParameterException |
-                 InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
+            Employee employee = new Employee(1703, lastName, firstName, email, MD5Util.encrypt(password));
+            session.save(employee);
+            if (session.isOpen()) session.close();
+        } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-        Employee employee = new Employee(1703, lastName, firstName, email, password);
-        session.save(employee);
-        if (session.isOpen())
-            session.close();
+
         response.sendRedirect("/signin_servlet_war/signin");
     }
 

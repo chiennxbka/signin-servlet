@@ -7,21 +7,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.hibernate.Session;
 import org.kai.academy.signinservlet.model.Employee;
-import org.kai.academy.signinservlet.utils.AESUtil;
 import org.kai.academy.signinservlet.utils.HibernateUtil;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
+import org.kai.academy.signinservlet.utils.MD5Util;
+import javax.persistence.NoResultException;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
 @WebServlet(name = "SigninServlet", value = "/signin")
@@ -40,6 +33,7 @@ public class SigninServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String error = request.getParameter("error");
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
         out.println("<head>                                                                                                                                         ");
@@ -101,27 +95,16 @@ public class SigninServlet extends HttpServlet {
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<Employee> criteriaQuery = builder.createQuery(Employee.class);
         Root<Employee> root = criteriaQuery.from(Employee.class);
-        criteriaQuery.select(root).where(builder.and(builder.equal(root.get("email"), email)));
         try {
-            Employee employee = session.createQuery(criteriaQuery).getSingleResult();
-            try {
-                String passEncrypt = employee.getPassword();
-                SecretKey key = AESUtil.generateKey(128);
-                IvParameterSpec ivParameterSpec = AESUtil.generateIv();
-                String algorithm = "AES/CBC/PKCS5Padding";
-                String passwordPlanText = AESUtil.decrypt(algorithm, passEncrypt, key, ivParameterSpec);
-                if (passwordPlanText.equals(password)) {
-                    response.sendRedirect("/products");
-                } else {
-                    response.sendError(404, "Email or Password invalid");
-                }
-            } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | NoSuchPaddingException |
-                     IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
-                throw new RuntimeException(e);
-            }
-        } catch (Exception exception) {
+            String passEncrypt = MD5Util.encrypt(password);
+            criteriaQuery.select(root).where(builder.and(builder.equal(root.get("email"), email), builder.equal(root.get("password"), passEncrypt)));
+            session.createQuery(criteriaQuery).getSingleResult();
+            response.sendRedirect("/signin_servlet_war/products");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }catch (NoResultException exception) {
             exception.printStackTrace();
-            response.sendError(404, "Email or Password invalid");
+            response.sendRedirect("/signin_servlet_war/signin?error=true");
         }
     }
 }
