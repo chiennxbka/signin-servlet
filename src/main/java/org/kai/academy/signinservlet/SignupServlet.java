@@ -151,7 +151,7 @@ public class SignupServlet extends HttpServlet {
             throw new RuntimeException(e);
         }
 
-        response.sendRedirect("/signin_servlet_war/signin");
+        response.sendRedirect("/signin-servlet/signin");
     }
 
     @Override

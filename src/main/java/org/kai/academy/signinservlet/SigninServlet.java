@@ -77,7 +77,7 @@ public class SigninServlet extends HttpServlet {
         out.println("                            </div>                                                                                                             ");
         out.println("                            <hr class=\"my-4\">                                                                                                  ");
         out.println("                            <div class=\"d-grid mb-2\">                                                                                          ");
-        out.println("                                <a href=\"/signin_servlet_war/signup\">Signup</a>                                                                                   ");
+        out.println("                                <a href=\"/signin-servlet/signup\">Signup</a>                                                                                   ");
         out.println("                            </div>                                                                                                             ");
         out.println("                        </form>                                                                                                                ");
         out.println("                    </div>                                                                                                                     ");
@@ -101,12 +101,12 @@ public class SigninServlet extends HttpServlet {
             String passEncrypt = MD5Util.encrypt(password);
             criteriaQuery.select(root).where(builder.and(builder.equal(root.get("email"), email), builder.equal(root.get("password"), passEncrypt)));
             session.createQuery(criteriaQuery).getSingleResult();
-            response.sendRedirect("/signin_servlet_war/products");
+            response.sendRedirect("/signin-servlet/products");
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }catch (NoResultException exception) {
             exception.printStackTrace();
-            response.sendRedirect("/signin_servlet_war/signin?error=true");
+            response.sendRedirect("/signin-servlet/signin?error=true");
         }
     }
 }

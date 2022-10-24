@@ -28,6 +28,9 @@ public class Product {
     @Column(name="productDescription")
     private String productDescription;
 
+    @Column(name="productImageLink")
+    private String productImageLink;
+
     @Column(name="quantityInStock")
     private int quantityInStock;
 
@@ -107,6 +110,14 @@ public class Product {
 
     public void setMSRP(double MSRP) {
         this.MSRP = MSRP;
+    }
+
+    public String getProductImageLink() {
+        return productImageLink;
+    }
+
+    public void setProductImageLink(String productImageLink) {
+        this.productImageLink = productImageLink;
     }
 
     @Override
